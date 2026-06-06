@@ -1,0 +1,165 @@
+/* Element defaults. A tiny reset, then the two-surface canvas and the
+   typographic baseline. Hierarchy comes from type + whitespace, so headings
+   carry real weight and the body sits quietly on the page tint. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  color-scheme: light dark;
+}
+
+body {
+  min-height: 100vh;
+  padding-block-end: var(--footer-height); /* clear the fixed footer */
+  background: var(--color-page-tint); /* the page behind */
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-2);
+  line-height: var(--font-lineheight-3);
+  /* Smooth the whole-app re-tint and the light/dark swap. */
+  transition:
+    background-color var(--tint-transition),
+    color var(--tint-transition);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--color-ink);
+  font-weight: var(--font-weight-7);
+  line-height: var(--font-lineheight-1);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--font-size-6);
+}
+h2 {
+  font-size: var(--font-size-4);
+}
+h3 {
+  font-size: var(--font-size-3);
+}
+h5 {
+  font-size: var(--font-size-2);
+  font-weight: var(--font-weight-7);
+}
+h6 {
+  font-size: var(--font-size-1);
+  font-weight: var(--font-weight-7);
+}
+
+p {
+  text-wrap: pretty;
+}
+
+strong,
+b {
+  font-weight: var(--font-weight-7);
+}
+em,
+i {
+  font-style: italic;
+}
+small {
+  font-size: var(--font-size-0);
+}
+
+ul,
+ol {
+  padding-inline-start: var(--size-5);
+}
+
+blockquote {
+  padding-inline-start: var(--size-4);
+  border-inline-start: 3px solid var(--color-hairline);
+  color: var(--color-ink-muted);
+}
+
+mark {
+  background: color-mix(in srgb, var(--color-rust) 25%, var(--color-canvas));
+  color: inherit;
+}
+
+kbd {
+  padding: 0.1em 0.4em;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  border: 1px solid var(--color-hairline);
+  border-radius: 4px;
+  background: var(--color-canvas);
+}
+
+a {
+  color: var(--color-blue);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+::placeholder {
+  color: var(--color-ink-muted);
+  opacity: 1;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-blue) 25%, transparent);
+}
+
+:disabled {
+  cursor: not-allowed;
+}
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: var(--disabled-opacity);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 2px;
+}
+
+/* Respect users who ask for less motion: neutralize the menu/modal/spinner
+   animations and the tint/mode transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

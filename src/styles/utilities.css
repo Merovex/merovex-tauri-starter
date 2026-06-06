@@ -1,0 +1,112 @@
+/* The concise utility set. Deliberately small: layout primitives and a few
+   text roles. A utility earns its place only if it'd otherwise be repeated
+   across many components. Everything else is a BEM component class.
+
+   Each primitive exposes a custom property (e.g. --stack-gap) so spacing can be
+   tuned in context without new modifier classes. */
+
+/* Centered content column at the reading measure. */
+.center {
+  width: 100%;
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding-inline: var(--size-5);
+  padding-block: var(--size-7);
+}
+
+/* Vertical rhythm. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-gap, var(--size-5));
+}
+.stack--tight {
+  --stack-gap: var(--size-2);
+}
+.stack--loose {
+  --stack-gap: var(--size-8);
+}
+
+/* Horizontal group that wraps; the workhorse for rows of controls. */
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cluster-gap, var(--size-3));
+}
+.cluster--between {
+  justify-content: space-between;
+}
+
+/* Broad, shallow grid of peer-level cards — the core content layout. */
+.grid {
+  display: grid;
+  gap: var(--grid-gap, var(--size-5));
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, var(--grid-min, 18rem)), 1fr)
+  );
+}
+
+/* Let a flex child fill the row (e.g. a growing input). */
+.grow {
+  flex: 1;
+}
+
+/* Strip default list chrome when a <ul> is used purely for grouping. */
+.plain-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* --- Text roles --- */
+
+/* Rust section label — small, uppercase, structural. */
+.eyebrow {
+  color: var(--color-rust);
+  font-size: var(--font-size-0);
+  font-weight: var(--font-weight-7);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.muted {
+  color: var(--color-ink-muted);
+}
+
+.link {
+  color: var(--color-blue);
+}
+
+/* --- A11y & text helpers --- */
+
+/* Visually hidden but available to screen readers (icon-only controls). */
+.visually-hidden {
+  position: absolute !important;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.text-center {
+  text-align: center;
+}

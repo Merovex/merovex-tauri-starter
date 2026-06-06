@@ -1,0 +1,12 @@
+/* Design system entry point. Import order matters:
+   OpenProps tokens → semantic layer → element base → utilities → components.
+
+   This file (and the ones it imports) is the ONLY place CSS lives.
+   No `.svelte` file may contain a <style> block. See CLAUDE.md. */
+
+@import 'open-props/style'; /* OpenProps tokens: --size-*, --font-*, --radius-* … */
+
+@import './tokens.css'; /* semantic roles + the single re-tintable canvas */
+@import './base.css'; /* reset + element defaults painted on the canvas */
+@import './utilities.css'; /* the concise utility set */
+@import './components.css'; /* BEM component classes */

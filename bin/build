@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+# Build MCP sidecar
+echo "Building MCP sidecar..."
+cd "$APP_DIR/src-tauri/mcp-server"
+cargo build --release
+
+# Copy to binaries with target triple
+TARGET=$(rustc -vV | grep host | awk '{print $2}')
+cp "$APP_DIR/src-tauri/target/release/verkilo-mcp" "$APP_DIR/src-tauri/binaries/verkilo-mcp-${TARGET}"
+cp "$APP_DIR/src-tauri/target/release/verkilo-mcp" "$APP_DIR/src-tauri/binaries/verkilo-mcp"
+echo "MCP sidecar copied to binaries/verkilo-mcp-${TARGET}"
+
+# Build Tauri app
+echo "Building Verkilo app..."
+cd "$APP_DIR"
+cargo tauri build

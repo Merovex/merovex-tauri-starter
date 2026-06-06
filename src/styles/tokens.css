@@ -1,0 +1,149 @@
+/* === Basecamp 5–inspired design tokens — the design's single source of truth.
+   Full model documented in docs/DESIGN.md.
+
+   THE MODEL IN BRIEF
+   ------------------
+   - Two surfaces: --color-page-tint (page behind) + --color-canvas (card on
+     top). In light they're nearly identical (≈98% vs 100% L) → the flat look.
+     In dark they separate (7.5% vs 14.7% L) → cards read as genuinely raised.
+   - One re-tintable page: a "drop" switcher (data-tint on <html>) swaps the
+     page tint among seven slots, all pinned ~96–98% L so contrast never shifts.
+   - Dark mode is a token swap; the seven tints COLLAPSE to one dark blue.
+   - Hierarchy is type + space + a restrained semantic palette (rust labels,
+     blue links/actions). Depth is rationed — see the elevation ladder.
+   Components reference ONLY these tokens, never raw literals or OpenProps props. */
+
+:root {
+  /* --- Surfaces --- */
+  --color-canvas: hsl(0 0% 100%); /* the card on top (white in light) */
+  --color-canvas-hover: rgb(249 249 249); /* faint fill feedback on tiles */
+  --color-page-tint: var(--tint-warm); /* the page behind (default = warm) */
+
+  /* The seven drop-switcher tints (light mode). Pinned ~96–98% L.
+     tint-3 intentionally duplicates the default warm. */
+  --tint-warm: hsl(26 94% 98%); /* default — warm cream/orange */
+  --tint-green: hsl(135 29% 97%);
+  --tint-purple: hsl(277 100% 98.5%);
+  --tint-warm-2: hsl(26 94% 98%); /* == default */
+  --tint-blue: hsl(214 100% 98%);
+  --tint-red: hsl(0 82% 97.5%);
+  --tint-grey: hsl(0 0% 96.5%);
+
+  /* --- Ink: near-black. The -rgb triplet powers translucent overlays. --- */
+  --ink-rgb: 43 55 62;
+  --color-ink: rgb(var(--ink-rgb));
+  --color-ink-muted: rgb(var(--ink-rgb) / 0.6);
+
+  /* --- Separators & semantic accents --- */
+  --color-hairline: rgb(227 229 229);
+  --color-blue: rgb(35 119 210); /* interactive: links, primary actions, menus */
+  --color-green: rgb(25 135 77); /* selected / affirmative state (#19874D) */
+  --color-rust: oklch(53% 0.15 40); /* structural: section-label eyebrows */
+
+  /* Translucent ink overlays (hover/active) instead of new colors. */
+  --overlay-hover: rgb(var(--ink-rgb) / 0.08); /* button hover */
+  --overlay-active: rgb(var(--ink-rgb) / 0.25); /* menu item / pressed */
+
+  /* --- Elevation ladder (rationed depth) --- */
+  --shadow-halo: 0 0 30px rgb(0 0 0 / 0.08); /* tier 0: resting cards */
+  --shadow-dialog: /* tier 2: floating nav dialog */
+    0 1px 2px rgb(0 0 0 / 0.06),
+    0 2px 4px rgb(0 0 0 / 0.06),
+    0 4px 8px rgb(0 0 0 / 0.08),
+    0 8px 16px rgb(0 0 0 / 0.08),
+    0 16px 32px rgb(0 0 0 / 0.1);
+  --color-scrim: rgb(0 0 0 / 0.5); /* tier 3: blocking modal backdrop */
+  --modal-width: 500px; /* tier 3 panel: hard width, caps at viewport */
+  --radius-modal: 12px; /* tier 3 panel radius (between card 8 and dialog 16) */
+  --shadow-modal: /* tier 3: 1px ring + two directional ambients */
+    0 0 0 1px rgb(0 0 0 / 0.1),
+    0 16px 24px -8px rgb(0 0 0 / 0.25),
+    0 24px 32px -16px rgb(0 0 0 / 0.25);
+
+  /* --- Shape, motion, measure --- */
+  --radius: 8px; /* cards, menus, buttons, fields */
+  --radius-lg: 16px; /* the floating dialog (double) */
+  --ease-spring: cubic-bezier(0.25, 1.25, 0.5, 1); /* menu overshoot */
+  --measure: 78ch; /* content column max width */
+  --footer-height: 56px; /* fixed bottom utility row */
+  --panel-width: 360px; /* fixed-width push panel (notifications) */
+  --card-pad: var(--size-5);
+  --tint-transition: 250ms ease;
+
+  /* --- Fields --- */
+  --field-height: 40px;
+  --color-field-border: rgb(var(--ink-rgb) / 0.15); /* ink @ 15%, not flat grey */
+  --color-field-border-strong: rgb(var(--ink-rgb) / 0.25); /* heavier — tiles */
+  --select-arrow-size: 8.8px;
+
+  /* --- State colors (info = --color-blue, success = --color-green) --- */
+  --color-danger: rgb(204 51 51); /* destructive actions / errors */
+  --color-warning: rgb(204 133 20); /* caution */
+
+  /* --- Interaction states --- */
+  --focus-ring: 0 0 0 2px var(--color-blue);
+  --disabled-opacity: 0.5;
+
+  /* --- Motion --- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --duration-1: 125ms;
+  --duration-2: 200ms;
+
+  /* --- Z-index scale (one ladder, no ad-hoc values) --- */
+  --z-sticky: 10;
+  --z-menu: 20; /* tier 1 */
+  --z-dialog: 100; /* tier 2 */
+  --z-modal: 300; /* tier 3 */
+  --z-toast: 400; /* above the modal so confirmations are always visible */
+  /* Self-contained double-chevron (up/down = "cycles values"), inked for light
+     mode. No CDN. Swapped to near-white in the dark block below. */
+  --select-arrow: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='14'%20viewBox='0%200%208%2014'%20fill='none'%20stroke='%232B373E'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M1%205%204%202%207%205'/%3E%3Cpath%20d='M1%209%204%2012%207%209'/%3E%3C/svg%3E");
+}
+
+/* --- Drop switcher: choose the page tint (light mode). Default needs no attr. --- */
+:root[data-tint='warm'] {
+  --color-page-tint: var(--tint-warm);
+}
+:root[data-tint='green'] {
+  --color-page-tint: var(--tint-green);
+}
+:root[data-tint='purple'] {
+  --color-page-tint: var(--tint-purple);
+}
+:root[data-tint='blue'] {
+  --color-page-tint: var(--tint-blue);
+}
+:root[data-tint='red'] {
+  --color-page-tint: var(--tint-red);
+}
+:root[data-tint='grey'] {
+  --color-page-tint: var(--tint-grey);
+}
+
+/* --- Dark mode: identical architecture, values swap, tints collapse to one
+   dark blue. Listed AFTER the tint presets so it wins regardless of data-tint.
+   `data-mode` on <html> forces a mode; absent, the system preference decides. --- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode='light']) {
+    --color-page-tint: hsl(202.5 42.1% 7.5%); /* #0B151B */
+    --color-canvas: hsl(200 28% 14.7%); /* #1B2930 */
+    --color-canvas-hover: hsl(200 28% 19%);
+    --ink-rgb: 222 227 230;
+    --color-ink: hsl(205.7 13.2% 89.6%); /* near-white */
+    --color-ink-muted: hsl(205.7 13.2% 89.6% / 0.6);
+    --color-hairline: hsl(200 18% 24%);
+    --shadow-halo: 0 0 30px rgb(0 0 0 / 0.35);
+    --select-arrow: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='14'%20viewBox='0%200%208%2014'%20fill='none'%20stroke='%23DFE4E7'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M1%205%204%202%207%205'/%3E%3Cpath%20d='M1%209%204%2012%207%209'/%3E%3C/svg%3E");
+  }
+}
+:root[data-mode='dark'] {
+  --color-page-tint: hsl(202.5 42.1% 7.5%);
+  --color-canvas: hsl(200 28% 14.7%);
+  --color-canvas-hover: hsl(200 28% 19%);
+  --ink-rgb: 222 227 230;
+  --color-ink: hsl(205.7 13.2% 89.6%);
+  --color-ink-muted: hsl(205.7 13.2% 89.6% / 0.6);
+  --color-hairline: hsl(200 18% 24%);
+  --shadow-halo: 0 0 30px rgb(0 0 0 / 0.35);
+  --select-arrow: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='14'%20viewBox='0%200%208%2014'%20fill='none'%20stroke='%23DFE4E7'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M1%205%204%202%207%205'/%3E%3Cpath%20d='M1%209%204%2012%207%209'/%3E%3C/svg%3E");
+}

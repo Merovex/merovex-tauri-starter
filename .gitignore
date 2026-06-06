@@ -1,0 +1,6 @@
+node_modules
+dist
+.DS_Store
+# Local document files + their SQLite sidecars (-wal/-shm).
+# Update if you change the extension in tauri.conf.json (fileAssociations).
+*.appdoc*

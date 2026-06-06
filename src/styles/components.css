@@ -1,0 +1,1038 @@
+/* BEM component classes. Names are global (external CSS = no Svelte scoping),
+   so use Block__Element--Modifier. Components reference semantic tokens only.
+
+   The blocks below climb the four-tier ELEVATION LADDER from docs/DESIGN.md:
+     tier 0  .card        resting — canvas + faint halo, no border
+     tier 1  .menu        transient popover — solid blue, no shadow
+     tier 2  .dialog      floating nav — white, 16px radius, layered shadow
+     tier 3  .modal       blocking — panel + full-page scrim
+   Depth, radius, and "blocking-ness" increase together with importance. */
+
+/* --- Icons (shared sprite, currentColor) --- */
+.icon {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  fill: currentColor;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.icon--sm {
+  inline-size: 0.875rem; /* 14px — the menu/inline default */
+  block-size: 0.875rem;
+}
+.icon--lg {
+  inline-size: 1.5rem; /* 24px — the sprite's native size */
+  block-size: 1.5rem;
+}
+
+/* --- Tier 0: Card. A peer-level content module. Set off by padding and a
+   faint ambient halo ONLY — no border, no drop shadow, no elevation. Shares
+   the canvas surface that sits just above the page tint. --- */
+.card {
+  padding: var(--card-pad);
+  border-radius: var(--radius);
+  background: var(--color-canvas);
+  box-shadow: var(--shadow-halo);
+}
+.card__title {
+  font-size: var(--font-size-3);
+  font-weight: var(--font-weight-7);
+}
+.card__meta {
+  color: var(--color-ink-muted);
+  font-size: var(--font-size-0);
+  font-family: var(--font-mono);
+  word-break: break-all;
+}
+
+/* --- Region edge: a strip on the canvas marked off by a single hairline
+   underneath (not a different-colored layer). The action bar pattern. --- */
+.action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--size-3);
+  padding: var(--size-3) var(--size-4);
+  background: var(--color-canvas);
+  box-shadow: var(--color-hairline) 0 1px 0 0;
+}
+
+/* --- Button. Quiet by default: no fill, ink text, ink-overlay hover.
+   --primary uses the one blue for emphasis. --- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2);
+  padding: var(--size-2) var(--size-3);
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+.button:hover {
+  background: var(--overlay-hover);
+}
+.button--primary {
+  background: var(--color-blue);
+  color: white;
+}
+.button--primary:hover {
+  background: var(--color-blue);
+  filter: brightness(1.07);
+}
+
+/* --- Field: text input / select. Exact resting + focus spec measured from
+   Basecamp. The pixel geometry (12px/32px/12.8px/8.8px) is field-specific and
+   intentionally literal; colors/height are tokenized so it themes. Focus shows
+   a blue border + a tight 2px blue bloom (no OS outline), faded in over 125ms —
+   only box-shadow animates. --- */
+.field {
+  box-sizing: border-box;
+  height: var(--field-height); /* 40px */
+  width: 100%;
+  padding: 0 12px;
+  font-size: var(--font-size-2); /* 16px */
+  font-weight: var(--font-weight-4); /* 400 */
+  color: var(--color-ink);
+  background-color: var(--color-canvas);
+  border: 1px solid var(--color-field-border); /* ink @ 15% */
+  border-radius: var(--radius); /* 8px — consistent radius family */
+  box-shadow: none;
+  outline: none;
+  transition: box-shadow 125ms ease-out;
+}
+.field:focus,
+.field:focus-visible {
+  border-color: var(--color-blue);
+  box-shadow: 0 0 2px 0 var(--color-blue);
+}
+
+/* Native <select>, skinned: OS keeps the open option list; the closed control is
+   fully styled, with a self-contained double-chevron arrow. */
+select.field {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 32px; /* reserve room for the arrow */
+  background-image: var(--select-arrow);
+  background-repeat: no-repeat;
+  background-position: calc(100% - 12.8px) 50%;
+  background-size: var(--select-arrow-size); /* 8.8px */
+}
+
+/* --- Segmented control: a radio-style row of icon-over-label tiles (not a
+   unified pill — independent tiles separated by an 8px gap). Selection is shown
+   by a solid GREEN fill with white content — green = "which option is currently
+   true", distinct from blue (interactive) and rust (structural). Drive it as a
+   radiogroup (role="radio" + aria-checked) for accessibility. --- */
+.segmented {
+  display: flex;
+  gap: var(--size-2); /* 8px */
+}
+.segmented__option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-1); /* 4px — icon over label */
+  height: 76px;
+  padding: 10.9px 13.6px; /* measured tile padding */
+  box-sizing: border-box;
+  font-size: var(--font-size-2); /* 16px */
+  font-weight: var(--font-weight-4); /* 400 */
+  text-align: center;
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-field-border-strong); /* ink @ 25% */
+  border-radius: var(--radius); /* 8px */
+  cursor: pointer;
+  transition: all 125ms ease;
+}
+.segmented__option:not([aria-checked='true']):hover {
+  background: var(--color-canvas-hover);
+}
+.segmented__option[aria-checked='true'] {
+  background: var(--color-green);
+  border-color: var(--color-green);
+  color: white; /* flips icon (currentColor) + label to white */
+}
+
+/* --- Tier 1: Menu. Transient popover — a solid, fully-saturated blue panel.
+   On top by color + stacking, NOT by simulated height (no shadow). Opens with
+   a springy overshoot. Items highlight via a translucent ink bar. --- */
+.menu {
+  position: absolute;
+  z-index: var(--z-menu);
+  min-inline-size: 12rem;
+  padding: var(--size-2);
+  border-radius: var(--radius);
+  background: var(--color-blue);
+  color: white;
+  animation: menu-in 150ms var(--ease-spring);
+}
+.menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2);
+  width: 100%;
+  padding: var(--size-2) var(--size-3);
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.menu__item:hover {
+  background: var(--overlay-active);
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* --- Tier 2: Dialog. The one richly-elevated FLOATING surface (global nav /
+   search). White, doubled radius, a true layered shadow — but no scrim, so it
+   floats without blocking the page. --- */
+.dialog {
+  position: fixed;
+  z-index: var(--z-dialog);
+  border-radius: var(--radius-lg);
+  background: var(--color-canvas);
+  box-shadow: var(--shadow-dialog);
+  padding: var(--card-pad);
+}
+
+/* --- Command palette (⌘K): a floating panel near the top, light backdrop. --- */
+.palette-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-block-start: 12vh;
+  background: rgb(0 0 0 / 0.2);
+}
+.palette {
+  inline-size: min(560px, 92vw);
+  border-radius: var(--radius-lg);
+  background: var(--color-canvas);
+  box-shadow: var(--shadow-dialog);
+  overflow: hidden;
+}
+.palette__input {
+  width: 100%;
+  padding: var(--size-4);
+  border: none;
+  border-block-end: 1px solid var(--color-hairline);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-size: var(--font-size-3);
+  outline: none;
+}
+.palette__list {
+  max-block-size: 50vh;
+  overflow-y: auto;
+}
+.palette__item {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2);
+  width: 100%;
+  padding: var(--size-3) var(--size-4);
+  border: none;
+  background: transparent;
+  color: var(--color-ink);
+  text-align: start;
+  cursor: pointer;
+}
+.palette__item:hover {
+  background: var(--overlay-hover);
+}
+.palette__empty {
+  padding: var(--size-3) var(--size-4);
+}
+
+/* --- Tier 3: Modal. The top, BLOCKING tier. The `.modal` host IS the scrim
+   (no separate overlay child): it dims/disables the whole page and centers the
+   panel. The strongest "stop and deal with this" signal — reserve for focused
+   tasks. Exact values measured from Basecamp's bc-modal. --- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--size-3); /* 16px — the only responsive cap on the panel */
+  background: var(--color-scrim); /* instant, no fade */
+}
+.modal__panel {
+  inline-size: var(--modal-width); /* hard 500px… */
+  max-inline-size: 100%; /* …but never wider than the 16px-padded viewport */
+  max-block-size: 100%;
+  overflow-y: auto;
+  padding: var(--size-7); /* 32px uniform */
+  border-radius: var(--radius-modal); /* 12px */
+  background: var(--color-canvas);
+  box-shadow: var(--shadow-modal);
+  transform-origin: center;
+  /* A quick, restrained scale-pop — deliberately NOT the menu's longer bezier. */
+  animation: modal-appear 100ms ease-in-out;
+}
+@keyframes modal-appear {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.02); /* gentle overshoot */
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ===========================================================================
+   BASELINE COMPONENT LIBRARY
+   Forms · button variants · badges · banners · lists · feedback · table ·
+   tabs · toast · tooltip · avatar · accordion. All token-driven.
+   =========================================================================== */
+
+/* --- Button variants, sizes, states --- */
+.button--secondary {
+  border: 1px solid var(--color-field-border-strong);
+}
+.button--danger {
+  background: var(--color-danger);
+  color: white;
+}
+.button--danger:hover {
+  background: var(--color-danger);
+  filter: brightness(1.07);
+}
+.button--ghost {
+  color: var(--color-blue); /* quiet, text-only emphasis */
+}
+.button--sm {
+  padding: var(--size-1) var(--size-2);
+  font-size: var(--font-size-0);
+}
+.button--lg {
+  padding: var(--size-3) var(--size-5);
+  font-size: var(--font-size-3);
+}
+.button--icon {
+  padding: var(--size-2); /* square, icon-only */
+}
+.button:disabled,
+.button[aria-disabled='true'] {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+}
+.button-group {
+  display: inline-flex;
+}
+.button-group .button {
+  border-radius: 0;
+}
+.button-group .button:first-child {
+  border-start-start-radius: var(--radius);
+  border-end-start-radius: var(--radius);
+}
+.button-group .button:last-child {
+  border-start-end-radius: var(--radius);
+  border-end-end-radius: var(--radius);
+}
+
+/* --- Forms --- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-1);
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--size-3);
+}
+.label {
+  font-size: var(--font-size-1);
+  font-weight: var(--font-weight-6);
+  color: var(--color-ink);
+}
+.required {
+  color: var(--color-danger);
+}
+.help {
+  font-size: var(--font-size-0);
+  color: var(--color-ink-muted);
+}
+.field-error {
+  font-size: var(--font-size-0);
+  color: var(--color-danger);
+}
+.field--invalid {
+  border-color: var(--color-danger);
+}
+.field--invalid:focus {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 2px 0 var(--color-danger);
+}
+/* Multiline: opt out of the fixed 40px field height. */
+textarea.field {
+  height: auto;
+  min-block-size: 5rem;
+  padding-block: var(--size-2);
+  line-height: var(--font-lineheight-3);
+  resize: vertical;
+}
+/* Native checkbox/radio, tinted to the interactive blue. */
+.checkbox,
+.radio {
+  accent-color: var(--color-blue);
+  inline-size: 1.1em;
+  block-size: 1.1em;
+}
+/* Switch: label-wrapped checkbox; "on" is affirmative green. */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2);
+  cursor: pointer;
+}
+.switch__input {
+  position: absolute;
+  opacity: 0;
+  inline-size: 0;
+  block-size: 0;
+}
+.switch__track {
+  position: relative;
+  inline-size: 36px;
+  block-size: 20px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--color-field-border-strong);
+  transition: background-color var(--duration-1) ease;
+}
+.switch__track::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  inline-size: 16px;
+  block-size: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--duration-1) ease;
+}
+.switch__input:checked + .switch__track {
+  background: var(--color-green);
+}
+.switch__input:checked + .switch__track::after {
+  transform: translateX(16px);
+}
+.switch__input:focus-visible + .switch__track {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 2px;
+}
+
+/* --- Badge / tag / pill --- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-1);
+  padding: 0.1em 0.6em;
+  border-radius: 999px;
+  font-size: var(--font-size-0);
+  font-weight: var(--font-weight-6);
+  line-height: 1.5;
+  background: var(--overlay-hover);
+  color: var(--color-ink);
+}
+.badge--success {
+  background: color-mix(in srgb, var(--color-green) 15%, var(--color-canvas));
+  color: var(--color-green);
+}
+.badge--info {
+  background: color-mix(in srgb, var(--color-blue) 15%, var(--color-canvas));
+  color: var(--color-blue);
+}
+.badge--danger {
+  background: color-mix(in srgb, var(--color-danger) 15%, var(--color-canvas));
+  color: var(--color-danger);
+}
+
+/* --- Banner / callout (inline notice) --- */
+.banner {
+  display: flex;
+  gap: var(--size-3);
+  padding: var(--size-3) var(--size-4);
+  border-radius: var(--radius);
+  background: var(--color-canvas);
+  box-shadow: inset 0 0 0 1px var(--color-field-border);
+}
+.banner__icon {
+  flex-shrink: 0;
+  color: var(--color-ink-muted);
+}
+.banner__body {
+  flex: 1;
+}
+.banner--info {
+  background: color-mix(in srgb, var(--color-blue) 8%, var(--color-canvas));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-blue) 30%, transparent);
+}
+.banner--info .banner__icon {
+  color: var(--color-blue);
+}
+.banner--success {
+  background: color-mix(in srgb, var(--color-green) 8%, var(--color-canvas));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-green) 30%, transparent);
+}
+.banner--success .banner__icon {
+  color: var(--color-green);
+}
+.banner--warning {
+  background: color-mix(in srgb, var(--color-warning) 10%, var(--color-canvas));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-warning) 30%, transparent);
+}
+.banner--warning .banner__icon {
+  color: var(--color-warning);
+}
+.banner--danger {
+  background: color-mix(in srgb, var(--color-danger) 8%, var(--color-canvas));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-danger) 30%, transparent);
+}
+.banner--danger .banner__icon {
+  color: var(--color-danger);
+}
+
+/* --- Divider + list rows (the non-card, hairline-separated list) --- */
+hr,
+.divider {
+  border: none;
+  block-size: 1px;
+  background: var(--color-hairline);
+  margin-block: var(--size-4);
+}
+.list {
+  display: flex;
+  flex-direction: column;
+}
+.list__row {
+  display: flex;
+  align-items: center;
+  gap: var(--size-3);
+  padding: var(--size-3) 0;
+  border-block-end: 1px solid var(--color-hairline);
+}
+.list__row:last-child {
+  border-block-end: none;
+}
+
+/* --- Spinner --- */
+.spinner {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-field-border-strong);
+  border-top-color: var(--color-blue);
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Empty state --- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--size-2);
+  padding: var(--size-8) var(--size-4);
+  color: var(--color-ink-muted);
+}
+.empty-state .icon {
+  inline-size: 2rem;
+  block-size: 2rem;
+}
+
+/* --- Table --- */
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+.table th,
+.table td {
+  text-align: start;
+  padding: var(--size-2) var(--size-3);
+  border-block-end: 1px solid var(--color-hairline);
+}
+.table th {
+  font-size: var(--font-size-0);
+  font-weight: var(--font-weight-7);
+  color: var(--color-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.table tbody tr:hover {
+  background: var(--overlay-hover);
+}
+
+/* --- Tabs --- */
+.tabs {
+  display: flex;
+  gap: var(--size-4);
+  border-block-end: 1px solid var(--color-hairline);
+}
+.tab {
+  padding: var(--size-2) 0;
+  margin-block-end: -1px;
+  border: none;
+  border-block-end: 2px solid transparent;
+  background: none;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+.tab:hover {
+  color: var(--color-ink);
+}
+.tab[aria-selected='true'] {
+  color: var(--color-ink);
+  border-block-end-color: var(--color-blue);
+  font-weight: var(--font-weight-6);
+}
+
+/* --- Toast / snackbar (transient; container is fixed, top of the z-ladder) --- */
+.toaster {
+  position: fixed;
+  inset-block-end: var(--size-4);
+  inset-inline-end: var(--size-4);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2);
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2);
+  padding: var(--size-3) var(--size-4);
+  border-radius: var(--radius);
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  box-shadow: var(--shadow-dialog);
+}
+.toast--success {
+  background: var(--color-green);
+  color: white;
+}
+.toast--danger {
+  background: var(--color-danger);
+  color: white;
+}
+
+/* --- Tooltip (pure CSS via data-tooltip) --- */
+[data-tooltip] {
+  position: relative;
+}
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  inset-block-end: calc(100% + 6px);
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  padding: var(--size-1) var(--size-2);
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  font-size: var(--font-size-0);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-1) ease;
+}
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after {
+  opacity: 1;
+}
+
+/* --- Avatar --- */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--color-blue);
+  color: white;
+  font-size: var(--font-size-0);
+  font-weight: var(--font-weight-7);
+}
+.avatar img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+.avatar--sm {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+}
+.avatar--lg {
+  inline-size: 3rem;
+  block-size: 3rem;
+}
+
+/* --- Accordion (native <details>, zero JS) --- */
+.accordion {
+  border-block-end: 1px solid var(--color-hairline);
+}
+.accordion summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--size-2);
+  padding: var(--size-3) 0;
+  font-weight: var(--font-weight-6);
+  cursor: pointer;
+  list-style: none;
+}
+.accordion summary::-webkit-details-marker {
+  display: none;
+}
+.accordion__body {
+  padding-block-end: var(--size-3);
+  color: var(--color-ink-muted);
+}
+
+/* --- Footer: fixed bottom utility row. Canvas with a hairline on TOP (mirror
+   of .action-bar). Three zones via a 1fr/auto/1fr grid so the nav stays
+   centered regardless of the side widths. --- */
+.footer {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: var(--z-sticky);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--size-3);
+  block-size: var(--footer-height);
+  padding-inline: var(--size-4);
+  background: var(--color-canvas);
+  box-shadow: var(--color-hairline) 0 -1px 0 0;
+}
+.footer__left {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2);
+  justify-self: start;
+}
+.footer__right {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2);
+  justify-self: end;
+}
+.footer-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4);
+  justify-self: center;
+}
+/* Quiet text nav item — ink, ink-overlay hover (not the blue link treatment). */
+.navlink {
+  padding: var(--size-1) var(--size-2);
+  border: none;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+.navlink:hover {
+  background: var(--overlay-hover);
+}
+
+/* --- Notifications toggle (footer right) --- */
+/* With unread: an orange count chip + "New for you" in a warm pill.
+   Empty: a quiet bell + "Notifications" (no pill). */
+.notif-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2);
+  padding: var(--size-1) var(--size-3) var(--size-1) var(--size-1);
+  border: none;
+  border-radius: 999px;
+  background: var(--tint-warm);
+  color: var(--color-ink);
+  font-weight: var(--font-weight-6);
+  cursor: pointer;
+}
+.notif-toggle--empty {
+  padding: var(--size-1) var(--size-2);
+  background: none;
+  color: var(--color-ink-muted);
+  font-weight: var(--font-weight-4);
+}
+.notif-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 1.5rem;
+  block-size: 1.5rem;
+  padding-inline: 0.4em;
+  border-radius: 999px;
+  background: var(--color-rust);
+  color: white;
+  font-size: var(--font-size-0);
+  font-weight: var(--font-weight-7);
+}
+
+/* --- App shell: header + main. Pads on the right to "push" room for the panel;
+   the panel slides in over that strip, so the two animate together. --- */
+.app-shell {
+  transition: padding-inline-end var(--duration-2) var(--ease-standard);
+}
+.app-shell.is-pushed {
+  padding-inline-end: var(--panel-width);
+}
+
+/* --- Notifications push panel: fixed width, right edge, above the footer. --- */
+.notif {
+  position: fixed;
+  inset-block-start: 0;
+  inset-block-end: var(--footer-height);
+  inset-inline-end: 0;
+  z-index: var(--z-sticky);
+  inline-size: var(--panel-width);
+  transform: translateX(100%);
+  transition: transform var(--duration-2) var(--ease-standard);
+  background: var(--color-page-tint); /* same as the page — no seam, no border */
+  font-size: 0.875rem; /* 14px — panel is UI chrome, smaller than document text */
+}
+.notif.is-open {
+  transform: none;
+}
+.notif__inner {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  inline-size: var(--panel-width); /* fixed, so content doesn't reflow mid-slide */
+}
+.notif__scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--card-pad);
+}
+.notif__heading {
+  margin-block-start: var(--size-4);
+  font-weight: var(--font-weight-7);
+}
+/* Due reminders sit at the top under a blue heading. */
+.notif__heading--reminders {
+  margin-block-start: 0;
+  color: var(--color-blue);
+}
+.notif-row__remind {
+  display: inline-flex;
+  padding: var(--size-1);
+  border: none;
+  background: none;
+  color: var(--color-blue);
+  cursor: pointer;
+}
+.notif__filter {
+  padding: var(--size-3) var(--card-pad);
+  border-block-start: 1px solid var(--color-hairline);
+}
+.notif-row {
+  position: relative;
+  display: flex;
+  gap: var(--size-3);
+  align-items: flex-start;
+  padding: var(--size-3);
+  border-radius: var(--radius);
+}
+.notif-row:hover {
+  background: var(--overlay-hover);
+}
+.notif-row__icon {
+  flex-shrink: 0;
+  color: var(--color-rust);
+}
+.notif-row__body {
+  flex: 1;
+  min-inline-size: 0;
+}
+.notif-row__title {
+  margin: 0;
+  font-size: 0.875rem; /* 14px */
+  font-weight: var(--font-weight-7);
+  line-height: 1.3;
+}
+
+/* Right end of a row: the unread "1" badge by default; on hover it's replaced
+   by the action buttons (remind + overflow). */
+.notif-row__end {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2);
+}
+.notif-row__actions {
+  display: none;
+  gap: var(--size-1);
+}
+.notif-row:hover .notif-row__count,
+.notif-row:focus-within .notif-row__count {
+  display: none;
+}
+.notif-row:hover .notif-row__actions,
+.notif-row:focus-within .notif-row__actions {
+  display: flex;
+}
+.notif-row__act {
+  display: inline-flex;
+  padding: var(--size-1);
+  border: none;
+  border-radius: var(--radius);
+  background: var(--color-canvas);
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.15);
+}
+.notif-row__act:hover {
+  color: var(--color-ink);
+}
+
+/* Row popover menus — the blue Tier-1 .menu, anchored under the row actions. */
+.notif-menu {
+  inset-block-start: 2.75rem;
+  inset-inline-end: var(--size-2);
+}
+.notif-menu--wide {
+  min-inline-size: 16rem;
+}
+.menu__header {
+  padding: var(--size-2) var(--size-3);
+  font-size: var(--font-size-0);
+  opacity: 0.85;
+}
+/* Top action row of the reminder menu: Show now (left) · Cancel reminder (right). */
+.menu__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--size-3);
+}
+.menu__act {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2);
+  padding: var(--size-2) var(--size-3);
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.menu__act:hover {
+  background: var(--overlay-active);
+}
+/* Inline "Pick a date" panel inside the (blue) reminder menu. */
+.menu__pick {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2);
+  padding: var(--size-2) var(--size-3);
+}
+.menu__schedule {
+  padding: var(--size-2) var(--size-3);
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  background: rgb(255 255 255 / 0.18);
+  color: white;
+  font: inherit;
+  cursor: pointer;
+}
+.menu__schedule:hover {
+  background: rgb(255 255 255 / 0.28);
+}
+.menu__meta {
+  margin-inline-start: auto;
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Empty "New for you" state — soft panel, gold sparkles. */
+.notif-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-2);
+  padding: var(--size-7) var(--size-5);
+  border-radius: var(--radius-lg);
+  background: var(--overlay-hover);
+  color: var(--color-ink-muted);
+  text-align: center;
+}
+.notif-empty__spark {
+  color: var(--color-warning);
+}
+
+/* Link to the scheduled list (quiet, muted). */
+.notif__scheduled-link {
+  align-self: flex-start;
+  padding: var(--size-1) 0;
+  border: none;
+  background: none;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+.notif__scheduled-link:hover {
+  text-decoration: underline;
+}
+
+/* "Scheduled" sub-view. */
+.notif__head {
+  display: flex;
+  align-items: center;
+  gap: var(--size-3);
+  padding: var(--card-pad);
+  border-block-end: 1px solid var(--color-hairline);
+}
+.notif__title {
+  font-size: var(--font-size-4);
+  font-weight: var(--font-weight-7);
+}
+/* Outlined date pill on a scheduled-reminder row. */
+.remind-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-1);
+  padding: var(--size-1) var(--size-3);
+  border: 1px solid var(--color-blue);
+  border-radius: 999px;
+  color: var(--color-blue);
+  font-weight: var(--font-weight-6);
+  white-space: nowrap;
+}

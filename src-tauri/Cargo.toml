@@ -1,0 +1,45 @@
+[package]
+name = "app"
+version = "0.1.0"
+description = "A Tauri + Svelte + SQLite starter"
+authors = ["you"]
+edition = "2021"
+
+[lib]
+# The `_lib` suffix keeps the lib name distinct from the bin name.
+# Required on Windows; see https://github.com/rust-lang/cargo/issues/8519
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+serde_json = "1"
+chrono = "0.4"
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Data layer. rusqlite 0.32 + refinery 0.8 are a known-compatible pair.
+rusqlite = { version = "0.32", features = ["bundled", "chrono"] }
+refinery = { version = "0.8", features = ["rusqlite"] }
+
+uuid = { version = "1", features = ["v7"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+url = "2"
+
+# Desktop-only plugins (not built for mobile).
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-single-instance = "2"
+tauri-plugin-window-state = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
