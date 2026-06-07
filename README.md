@@ -143,7 +143,7 @@ tauri-starter/
 │       ├── components/Icon.svelte      # sprite icon component
 │       └── stores/document.svelte.js   # reactive state (runes)
 ├── public/sprites.svg        # the 267-icon currentColor sprite
-├── docs/                     # FEATURES · ARCHITECTURE · DESIGN · NOTIFICATIONS · SPRITE_INVENTORY
+├── docs/                     # FEATURES · ARCHITECTURE · DESIGN · NOTIFICATIONS · SPRITE_INVENTORY · MAINTAINING
 ├── src-tauri/                # Rust backend
 │   ├── src/
 │   │   ├── main.rs           # entry → lib::run()
