@@ -19,6 +19,27 @@ design is in [`docs/DESIGN.md`](docs/DESIGN.md); the 267-icon set in
 in `src/styles/` — `.svelte` files contain no styling, and `pnpm build` fails if
 they do (`scripts/check-no-svelte-css.mjs`).
 
+## Features
+
+Full list in [`docs/FEATURES.md`](docs/FEATURES.md). Highlights:
+
+- **Data:** dual SQLite databases (`app.db` + per-document `.appdoc`), Refinery
+  versioned migrations, UUIDv7 + soft deletes, integrity check on open, optimize
+  on close, daily backups.
+- **Document model:** one file = one SQLite DB; extension is single-sourced from
+  `tauri.conf.json` into both Rust and the frontend; window title shows the doc.
+- **Desktop:** native menu + shortcuts, open-with / single-instance,
+  window-state, Open Recent, About, file logging, system tray, command palette
+  (`⌘K`), drag-and-drop open, confirm-on-delete, auto-update scaffolding (inert
+  until configured).
+- **Design system:** Basecamp 5–inspired single-surface UI — re-tintable page (7
+  tints), dark mode, four-tier elevation ladder, a full component library on
+  OpenProps tokens, a 267-glyph `currentColor` icon sprite, all CSS external.
+- **Notifications & reminders:** push panel with due/scheduled reminders,
+  per-item snooze ("Remind me later") with a date picker, filter, footer badge.
+- **DX:** no-CSS-in-`.svelte` guard, Prettier/rustfmt config, placeholder icon
+  generator.
+
 ## Prerequisites
 
 - [Rust](https://rustup.rs/) (stable)
@@ -122,7 +143,7 @@ tauri-starter/
 │       ├── components/Icon.svelte      # sprite icon component
 │       └── stores/document.svelte.js   # reactive state (runes)
 ├── public/sprites.svg        # the 267-icon currentColor sprite
-├── docs/                     # ARCHITECTURE.md · DESIGN.md · SPRITE_INVENTORY.md
+├── docs/                     # FEATURES · ARCHITECTURE · DESIGN · NOTIFICATIONS · SPRITE_INVENTORY
 ├── src-tauri/                # Rust backend
 │   ├── src/
 │   │   ├── main.rs           # entry → lib::run()
